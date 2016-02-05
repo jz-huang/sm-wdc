@@ -1,0 +1,25 @@
+{
+  "name": "tableau-wdc-mshealth",
+  "description": "This is a Tableau Web Data Connector for the Microsoft Health API (the place to get data for your Microsoft Band fitness tracker)",
+  "version": "0.0.1",
+  "author": "Ben Lower",
+  "contributors": [],
+  "license": "MIT",
+  "homepage": "",
+  "keywords": [],
+  "dependencies": {
+    "cookie-parser": "~1.3.*",
+    "express": "^4.13.4",
+    "moment": "~2.10.*",
+    "request": "~2.60.*"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "files": [],
+  "scripts": {
+    "start": "node app.js"
+  },
+  "main": "app.js"
+}
