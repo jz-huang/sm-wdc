@@ -33,8 +33,46 @@ var _smRedirectURL = config.SURVEY_MONKEY_REDIRECT_URL;
 var _smAPIKey = config.SURVEY_MONKEY_API_KEY; 
 var _authcode; 
 app.get('/redirect', function(req, res){
-  res.redirect('/smWDC.html');
-})
+	if (req.query.error != null){
+		console.log("error detected"); 
+	}
+	_authcode = req.query.code; 
+	console.log("code is :");
+	console.log(_authcode);
+	var requestObject = {
+      'client_id': _smClientID,
+      'redirect_uri': _smRedirectURL,
+      'client_secret': _smClientSecret,
+      'code': _authcode,
+      'grant_type': 'authorization_code'
+  	};
+  	var sm_token_request_header = {
+  		'Content-Type': 'application/x-www-form-urlencoded'	
+  	};
+
+  	var SM_API_BASE = "https://api.surveymonkey.net";
+	var ACCESS_TOKEN_ENDPOINT = "/oauth/token";
+	var access_token_uri = SM_API_BASE + ACCESS_TOKEN_ENDPOINT + '?api_key=' + _smAPIKey;
+	var options = {
+		method: 'POST',
+		url: access_token_uri,	
+		headers: sm_token_request_header, 
+		form: requestObject
+	};
+	request(options, function(error, response, body){
+		if (!error){
+			body = JSON.parse(body); 
+			var accessToken = body.access_token; 
+			console.log("found token:");
+			console.log(accessToken);
+			res.cookie('accessToken', accessToken, {});
+			res.redirect('/smWDC.html');
+		} else {
+			console.log(error); 
+		}
+	});
+
+});
 
 // -------------------------------------------------- //
 // Create and start our server
