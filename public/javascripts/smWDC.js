@@ -241,8 +241,8 @@ function parse_survey_details(data){
 	}
 	var transfer_data = []; 
 	transfer_data.push(tableau.connectionData); 
-	transfer_data.push(tableau.id_to_question_name);
-	transfer_data.push(tableau.id_to_answer_name); 
+	transfer_data.push(id_to_question_name);
+	transfer_data.push(id_to_answer_name); 
 	tableau.connectionData = JSON.stringify(transfer_data);
 	tableau.headersCallback(headers, fieldTypes);
 	// h = headers;
@@ -336,14 +336,19 @@ function _getResponses(survey_id, accessToken, respondents, index, api_limit, da
 };
 
 function parse_responses(data_array){
-	console.log(data_array[0][0].questions);
+	//console.log(data_array[0][0].questions);
 	var data_transferred = JSON.parse(tableau.connectionData);
 	var id_to_question_name = data_transferred[1]; 
 	var id_to_answer_name = data_transferred[2];
 	console.log("parsing responses");
+	console.log(id_to_question_name);
 	data = data_array; 
+	var questions; 
 	for (i = 0; i < data_array.length; i++){
-		console.log(1);
+		questions = data_array[i][0].questions; 
+		for (j = 0; j < questions.length; j++){
+			
+		}
 	}
 	tableau.dataCallback([], '0', false);
 };
