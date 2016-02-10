@@ -114,7 +114,6 @@ function request_survey_list(accessToken){
 function parse_survey_list(surveys){
 	surveys.sort(date_compare); //sort by date modified
 
-	//console.log(surveys);
 	if(surveys.length == 0) {
 		$('#surveys').append('<option value=-1>No Surveys Found </option>'); 
 		return; 
@@ -126,13 +125,11 @@ function parse_survey_list(surveys){
 };
 
 function date_compare(survey1, survey2){
-	//console.log(survey1.date_modified);
 	var date1 = new Date(survey1.date_modified);
 	var date2 = new Date(survey2.date_modified); 
 	return -(date1-date2); 
 }
 
-var data, h, f;
 function _getColumnHeaders(survey_id, accessToken){
 	var req_url = api_url.base + api_url.survey_details + api_url.api_key;
 	console.log(req_url);
@@ -150,18 +147,24 @@ function _getColumnHeaders(survey_id, accessToken){
 			if (textStatus != 'success' || jqXHR.responseJSON.errmsg ) {
 				alert('survey details api failed'); 
 			}
-			//console.log(jqXHR.responseJSON.data);
-			//data = jqXHR.responseJSON.data;
 			parse_survey_details(jqXHR.responseJSON.data); 
         }
 
 	});
 };
 
+function respondent_info_headers(){
+	headers = []; 
+	fieldTypes = [];
+	headers.push('respondent_ids'); 
+	fieldTypes.push('string');
+	return [headers, fieldTypes];
+}
+
 function parse_survey_details(data){
 	var page, question, type, answer; 
-	var headers = []; 
-	var fieldTypes = [];
+	var headers = respondent_info_headers()[0]; 
+	var fieldTypes = respondent_info_headers()[1];
 	var id_to_question_name = {}; 
 	var id_to_answer_name = {}; 
 	for (i = 0; i < data.pages.length; i++){
@@ -245,12 +248,6 @@ function parse_survey_details(data){
 	transfer_data.push(id_to_answer_name); 
 	tableau.connectionData = JSON.stringify(transfer_data);
 	tableau.headersCallback(headers, fieldTypes);
-	// h = headers;
-	// f = fieldTypes;
-	// console.log(headers.length); 
-	// console.log(fieldTypes.length);
-	// console.log(id_to_question_name); 
-	// console.log(id_to_answer_name);
 };
 
 function _getData(survey_id, accessToken){
@@ -336,23 +333,62 @@ function _getResponses(survey_id, accessToken, respondents, index, api_limit, da
 };
 
 function parse_responses(data_array){
-	//console.log(data_array[0][0].questions);
 	var data_transferred = JSON.parse(tableau.connectionData);
 	var id_to_question_name = data_transferred[1]; 
 	var id_to_answer_name = data_transferred[2];
-	console.log("parsing responses");
-	console.log(id_to_question_name);
 	data = data_array; 
-	var questions; 
+	var question, answers, entry, respondents, respondent; 
+	var toReturnData = []; 
+
 	for (i = 0; i < data_array.length; i++){
-		questions = data_array[i][0].questions; 
-		for (j = 0; j < questions.length; j++){
-			
+		respondents = data_array[i]; 
+		for (j = 0; j < respondents.length; j++){
+			respondent = respondents[j]; 
+			entry = fill_entry('respondent_ids', respondent.respondent_id, {});
+			for (k = 0; k < respondent.questions.length; k++){
+				question = respondent.questions[k]; 
+				answers = question.answers; 
+				if (answers[0].text){
+					if (answers[0].row ==='0') { //single comment box; 
+						entry = fill_entry(id_to_question_name[question.question_id], check_if_date(answers[0].text), entry); 
+					} else {
+						for (l = 0; l < answers.length; l++){
+							entry = fill_entry(id_to_question_name[answers[l].row], check_if_date(answers[l].text), entry); 
+						}
+					}
+				} else if (question.answers[0].col){
+					for (l = 0; l < answers.length; l++){
+						entry = fill_entry(id_to_question_name[answers[l].row], id_to_answer_name[answers[l].col], entry); 
+					} 
+				} else {
+					for (l = 0; l < answers.length; l++){
+						entry = fill_entry(id_to_question_name[question.question_id], id_to_answer_name[answers[l].row], entry);
+					}
+				}
+			}
+			toReturnData.push(entry);
 		}
 	}
-	tableau.dataCallback([], '0', false);
+	tableau.dataCallback(toReturnData, toReturnData.length.toString(), false);
 };
 
+function fill_entry(question_name, answer, entry){
+	if (entry[question_name] === undefined){
+		entry[question_name] = answer; 
+	} else {
+		entry[question_name] += '/' + answer; 
+	}
+	return entry; 
+};
+
+function check_if_date(dateToConvert){
+	var moDate = moment(dateToConvert).format("YYYY-MM-DD HH:mm:ss.SSS");
+	if (moDate === 'Invalid date'){
+		return dateToConvert; 
+	} else {
+		return moDate;
+	}
+}
 
 //-------------------------------------------------- //
 //WDC-specific things
@@ -360,7 +396,7 @@ function parse_responses(data_array){
 var myConnector = tableau.makeConnector();
 
 myConnector.init = function() {
-	console.log('inside init');
+	
 	var accessToken = Cookies.get("accessToken");
 
 	var hasAuth = (accessToken && accessToken.length > 0) || tableau.password.length > 0;
@@ -381,15 +417,10 @@ myConnector.init = function() {
 
 
 myConnector.getColumnHeaders = function() {
-	console.log("inside getColumn");
+	//console.log("inside getColumn");
 	var accessToken = tableau.password; 
 	var survey_id = tableau.connectionData;
 	_getColumnHeaders(survey_id, accessToken);
-
-  	//tableau.headersCallback(fieldNames, fieldTypes);
-  	// var fieldNames = ['Ticker', 'Day', 'Close'];
-   //  var fieldTypes = ['string', 'string', 'string'];
-   //  tableau.headersCallback(fieldNames, fieldTypes);
 };
 
 
@@ -397,21 +428,7 @@ myConnector.getTableData = function(lastRecordToken) {
 	var accessToken = tableau.password;
 	var data_transferred = JSON.parse(tableau.connectionData);
 	var survey_id = data_transferred[0]; 
-	console.log(survey_id);
 	setTimeout(_getRespondentList, 1000, survey_id, accessToken);
-	//_getRespondentList(survey_id, accessToken);
-
-	// var entry = {'Do you have any other comments, questions, or concerns?': 'HELL YES'
-	// 			};
-	// var datatoreturn = []; 
-	// datatoreturn.push(entry);
-	// tableau.dataCallback(datatoreturn, datatoreturn.length.toString(), false);
-	// if (lastRecordToken && lastRecordToken.length > 0) {
-	// 	requestMSHProfileByUrl(lastRecordToken);
-	// } else {
-	//     var accessToken = tableau.password;
-	//     requestMSHProfile(accessToken);	
-	// }
 };
 
 
