@@ -132,7 +132,7 @@ function date_compare(survey1, survey2){
 
 function _getColumnHeaders(survey_id, accessToken){
 	var req_url = api_url.base + api_url.survey_details + api_url.api_key;
-	console.log(req_url);
+	//console.log(req_url);
 	var xhr = $.ajax({
 		url: req_url,
 		type: 'POST',
@@ -303,7 +303,7 @@ function _getResponses(survey_id, accessToken, respondents, index, api_limit, da
 	};
 	//console.log(JSON.stringify(request_body));
 	var req_url = api_url.base + api_url.responses + api_url.api_key;
-	console.log(req_url);
+	//console.log(req_url);
 	var xhr = $.ajax({
 		url: req_url,
 		type: 'POST',
