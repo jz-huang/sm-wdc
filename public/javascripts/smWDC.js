@@ -173,17 +173,19 @@ function parse_survey_details(data){
 			question = page.questions[j]; 
 			type = question.type.family;
 			if (type === 'single_choice'){
-				headers.push(question.heading); 
+				// headers.push('1');
+				headers.push(clean_name(question.heading)); 
 				fieldTypes.push('string');
-				id_to_question_name[question.question_id] = question.heading; 
+				id_to_question_name[question.question_id] = clean_name(question.heading); 
 				for  (k = 0; k < question.answers.length; k++){
 					answer = question.answers[k];
 					id_to_answer_name[answer.answer_id] = answer.text;
 				}
 			} else if (type === 'multiple_choice'){
-				headers.push(question.heading);
+				// headers.push('1');
+				headers.push(clean_name(question.heading));
 				fieldTypes.push('string');
-				id_to_question_name[question.question_id] = question.heading; 
+				id_to_question_name[question.question_id] = clean_name(question.heading); 
 				for  (k = 0; k < question.answers.length; k++){
 					answer = question.answers[k];
 					id_to_answer_name[answer.answer_id] = answer.text;
@@ -192,13 +194,16 @@ function parse_survey_details(data){
 				//do a if text when parsing
 				if (question.answers.length === 0){
 					//essay/comment style: 
-					headers.push(question.heading); 
-					id_to_question_name[question.question_id] = question.heading;
+					//headers.push('1');
+					headers.push(clean_name(question.heading)); 
+					id_to_question_name[question.question_id] = clean_name(question.heading);
 					fieldTypes.push('string');
 				} else {
 					for  (k = 0; k < question.answers.length; k++){
 						answer = question.answers[k];
 						var header = question.heading + ' - ' + answer.text; 
+						// header = '1';
+						header = clean_name(header);
 						headers.push(header); 
 						id_to_question_name[answer.answer_id] = header; 
 						fieldTypes.push('string');
@@ -208,6 +213,7 @@ function parse_survey_details(data){
 				for  (k = 0; k < question.answers.length; k++){
 					answer = question.answers[k];
 					var header = question.heading + ' - ' + answer.text.trim(); 
+					header = clean_name(header);
 					headers.push(header); 
 					id_to_question_name[answer.answer_id] = header; 
 					fieldTypes.push('datetime');
@@ -217,6 +223,8 @@ function parse_survey_details(data){
 				for  (k = 0; k < question.answers.length; k++){
 					answer = question.answers[k];
 					var header = question.heading + ' - ' + answer.text.trim(); 
+					//header = '1';
+					header = clean_name(header);
 					headers.push(header); 
 					id_to_question_name[answer.answer_id] = header; 
 					fieldTypes.push('string');
@@ -229,6 +237,7 @@ function parse_survey_details(data){
 						id_to_answer_name[answer.answer_id] = answer.text; 
 					} else if (answer.type === 'row') {
 						var header = question.heading + ' - ' + answer.text; 
+						header = clean_name(header);
 						id_to_question_name[answer.answer_id] = header;
 						headers.push(header);
 						fieldTypes.push('string');
@@ -248,6 +257,11 @@ function parse_survey_details(data){
 	transfer_data.push(id_to_answer_name); 
 	tableau.connectionData = JSON.stringify(transfer_data);
 	tableau.headersCallback(headers, fieldTypes);
+};
+
+function clean_name(name){
+	var outString = name.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '');
+	return outString;
 };
 
 function _getData(survey_id, accessToken){
