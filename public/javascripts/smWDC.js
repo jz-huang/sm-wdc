@@ -156,7 +156,11 @@ function _getColumnHeaders(survey_id, accessToken){
 function respondent_info_headers(){
 	headers = []; 
 	fieldTypes = [];
-	headers.push('respondent_ids'); 
+	headers.push('respondent_id'); 
+	headers.push('question_name'); 
+	headers.push('question_response');
+	fieldTypes.push('string');
+	fieldTypes.push('string');
 	fieldTypes.push('string');
 	return [headers, fieldTypes];
 }
@@ -174,8 +178,8 @@ function parse_survey_details(data){
 			type = question.type.family;
 			if (type === 'single_choice'){
 				// headers.push('1');
-				headers.push(clean_name(question.heading)); 
-				fieldTypes.push('string');
+				//headers.push(clean_name(question.heading)); 
+				//fieldTypes.push('string');
 				id_to_question_name[question.question_id] = clean_name(question.heading); 
 				for  (k = 0; k < question.answers.length; k++){
 					answer = question.answers[k];
@@ -183,8 +187,8 @@ function parse_survey_details(data){
 				}
 			} else if (type === 'multiple_choice'){
 				// headers.push('1');
-				headers.push(clean_name(question.heading));
-				fieldTypes.push('string');
+				//headers.push(clean_name(question.heading));
+				//fieldTypes.push('string');
 				id_to_question_name[question.question_id] = clean_name(question.heading); 
 				for  (k = 0; k < question.answers.length; k++){
 					answer = question.answers[k];
@@ -195,18 +199,18 @@ function parse_survey_details(data){
 				if (question.answers.length === 0){
 					//essay/comment style: 
 					//headers.push('1');
-					headers.push(clean_name(question.heading)); 
+					//headers.push(clean_name(question.heading)); 
 					id_to_question_name[question.question_id] = clean_name(question.heading);
-					fieldTypes.push('string');
+					//fieldTypes.push('string');
 				} else {
 					for  (k = 0; k < question.answers.length; k++){
 						answer = question.answers[k];
 						var header = question.heading + ' - ' + answer.text; 
 						// header = '1';
 						header = clean_name(header);
-						headers.push(header); 
+						//headers.push(header); 
 						id_to_question_name[answer.answer_id] = header; 
-						fieldTypes.push('string');
+						//fieldTypes.push('string');
 					}
 				}
 			} else if ( type === 'datetime'){
@@ -214,9 +218,9 @@ function parse_survey_details(data){
 					answer = question.answers[k];
 					var header = question.heading + ' - ' + answer.text.trim(); 
 					header = clean_name(header);
-					headers.push(header); 
+					//headers.push(header); 
 					id_to_question_name[answer.answer_id] = header; 
-					fieldTypes.push('datetime');
+					//fieldTypes.push('datetime');
 				}
 			} else if (type === 'demographic'){
 				//do a if text when parsing
@@ -225,9 +229,9 @@ function parse_survey_details(data){
 					var header = question.heading + ' - ' + answer.text.trim(); 
 					//header = '1';
 					header = clean_name(header);
-					headers.push(header); 
+					//headers.push(header); 
 					id_to_question_name[answer.answer_id] = header; 
-					fieldTypes.push('string');
+					//fieldTypes.push('string');
 				}
 				
 			} else if (type === 'matrix'){
@@ -239,8 +243,8 @@ function parse_survey_details(data){
 						var header = question.heading + ' - ' + answer.text; 
 						header = clean_name(header);
 						id_to_question_name[answer.answer_id] = header;
-						headers.push(header);
-						fieldTypes.push('string');
+						//headers.push(header);
+						//fieldTypes.push('string');
 					} else {
 						console.log('unsupported answer type in matrix');
 					}
@@ -260,8 +264,8 @@ function parse_survey_details(data){
 };
 
 function clean_name(name){
-	var outString = name.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '');
-	return outString;
+	//name = name.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '');
+	return name;
 };
 
 function _getData(survey_id, accessToken){
@@ -353,47 +357,50 @@ function parse_responses(data_array){
 	data = data_array; 
 	var question, answers, entry, respondents, respondent; 
 	var toReturnData = []; 
+	var entry;
 
 	for (i = 0; i < data_array.length; i++){
 		respondents = data_array[i]; 
 		for (j = 0; j < respondents.length; j++){
 			respondent = respondents[j]; 
-			entry = fill_entry('respondent_ids', respondent.respondent_id, {});
+			//entry = fill_entry('respondent_ids', respondent.respondent_id, {});
 			for (k = 0; k < respondent.questions.length; k++){
 				question = respondent.questions[k]; 
 				answers = question.answers; 
 				if (answers[0].text){
 					if (answers[0].row ==='0') { //single comment box; 
-						entry = fill_entry(id_to_question_name[question.question_id], check_if_date(answers[0].text), entry); 
+						entry = fill_entry(respondent.respondent_id, id_to_question_name[question.question_id], answers[0].text); 
+						toReturnData.push(entry);
 					} else {
 						for (l = 0; l < answers.length; l++){
-							entry = fill_entry(id_to_question_name[answers[l].row], check_if_date(answers[l].text), entry); 
+							entry = fill_entry(respondent.respondent_id, id_to_question_name[answers[l].row], answers[l].text); 
+							toReturnData.push(entry);
 						}
 					}
 				} else if (question.answers[0].col){
 					for (l = 0; l < answers.length; l++){
-						entry = fill_entry(id_to_question_name[answers[l].row], id_to_answer_name[answers[l].col], entry); 
+						entry = fill_entry(respondent.respondent_id, id_to_question_name[answers[l].row], id_to_answer_name[answers[l].col]); 
+						toReturnData.push(entry);
 					} 
 				} else {
 					for (l = 0; l < answers.length; l++){
-						entry = fill_entry(id_to_question_name[question.question_id], id_to_answer_name[answers[l].row], entry);
+						entry = fill_entry(respondent.respondent_id, id_to_question_name[question.question_id], id_to_answer_name[answers[l].row]);
+						toReturnData.push(entry);
 					}
 				}
 			}
-			toReturnData.push(entry);
 		}
 	}
 	tableau.dataCallback(toReturnData, toReturnData.length.toString(), false);
 };
 
-function fill_entry(question_name, answer, entry){
-	if (entry[question_name] === undefined){
-		entry[question_name] = answer; 
-	} else {
-		entry[question_name] += '/' + answer; 
-	}
-	return entry; 
-};
+function fill_entry(respondent_id, question, answer){
+	var entry = {}; 
+	entry['respondent_id'] = respondent_id; 
+	entry['question_name'] = question; 
+	entry['question_response'] = answer;
+	return entry;
+}
 
 function check_if_date(dateToConvert){
 	var moDate = moment(dateToConvert).format("YYYY-MM-DD HH:mm:ss.SSS");
