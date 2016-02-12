@@ -1,13 +1,13 @@
-# tableau-wdc-mshealth
+# tableau-wdc-survey-monkey
 Tableau Web Data Connector for the Survey Monkey API.  Allows importing survey data to Tableau for visualization and analysis.
 =======
 
 
 Getting Started
 ---------------
-* Register your app with the Survey Monkey Developers.  
+* Register your app with the Survey Monkey Developers.
 * Create a file named config.js at the project root.  It will contain config info for your app including client ID and secret you'll get in step 1.  Config.js needs to look like the following:
- 
+
 
 ```
 module.exports = {
@@ -21,7 +21,7 @@ module.exports = {
 ```
 
 You can change host, port, and redirect URL.  If you change these make sure you also change them in app.js.
- 
+
 * Make sure you have Node.js installed
 * npm install
 * npm start
@@ -29,8 +29,8 @@ You can change host, port, and redirect URL.  If you change these make sure you 
 
 Current Limitations
 ---------------
-Currently, this WDC only supports survey questions types that are available to a free Survey Monkey user (i.e. matrix drop down menu is not supported, images related question are not supported). 
+Currently, this WDC only supports survey questions types that are available to a free Survey Monkey user (i.e. matrix drop down menu is not supported, images related question are not supported).
 
 Notes:
 1. For drop down menu, multiple choice, and matrix survey questions, there is an option to add a comment box or custom choice. Please take note to choose the appropriate option because custom
-   choices and comment boxes are parsed differently. 
+   choices and comment boxes are parsed differently.
