@@ -37,8 +37,6 @@ app.get('/redirect', function(req, res){
 		console.log("error detected"); 
 	}
 	_authcode = req.query.code; 
-	console.log("code is :");
-	console.log(_authcode);
 	var requestObject = {
       'client_id': _smClientID,
       'redirect_uri': _smRedirectURL,
@@ -63,8 +61,6 @@ app.get('/redirect', function(req, res){
 		if (!error){
 			body = JSON.parse(body); 
 			var accessToken = body.access_token; 
-			console.log("found token:");
-			console.log(accessToken);
 			res.cookie('accessToken', accessToken, {});
 			res.redirect('/smWDC.html');
 		} else {

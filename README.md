@@ -1,21 +1,22 @@
 # tableau-wdc-mshealth
-Tableau Web Data Connector for the Microsoft Health API.  Allows importing data to Tableau for visualization and analysis.
+Tableau Web Data Connector for the Survey Monkey API.  Allows importing survey data to Tableau for visualization and analysis.
 =======
 
 
 Getting Started
 ---------------
-* Register your app with the Microsoft Account Developer Center.  Details for this are in the [MS Health API Docs](http://developer.microsoftband.com/Content/docs/MS%20Health%20API%20Getting%20Started.pdf#page=3&zoom=auto,69,540)
+* Register your app with the Survey Monkey Developers.  
 * Create a file named config.js at the project root.  It will contain config info for your app including client ID and secret you'll get in step 1.  Config.js needs to look like the following:
  
 
 ```
 module.exports = {
- 'HOSTPATH': 'http://localhost',
- 'PORT': 8080, 
- 'MSHEALTH_CLIENT_ID': 'your_client_id', 
- 'MSHEALTH_CLIENT_SECRET': 'your_client_secret', 
- 'MSHEALTH_REDIRECT_URL': 'http://localhost:8080/redirect'
+  'HOSTPATH': 'http://localhost',
+  'PORT': 8080,
+  'SURVEY_MONKEY_CLIENT_ID': '',
+  'SURVEY_MONKEY_CLIENT_SECRET': '',
+  'SURVEY_MONKEY_API_KEY': '',
+  'SURVEY_MONKEY_REDIRECT_URL': 'http://localhost:8080/redirect'
 };
 ```
 
@@ -28,28 +29,8 @@ You can change host, port, and redirect URL.  If you change these make sure you 
 
 Current Limitations
 ---------------
-Currently this WDC is only pulling some of the data from the MS Health API.  See below for what's currently supported.
+Currently, this WDC only supports survey questions types that are available to a free Survey Monkey user (i.e. matrix drop down menu is not supported, images related question are not supported). 
 
-MS Health Object     | Supported?
--------- | ---
-User Profile | No
-Device    | No
-Activity     | Partial
-Summary |No
-
-
-**Activity Support**
-Currently this WDC is pulling in the following data for Run, Bike, and FreePlay activities:
-
-Property      |   Supported?
---------  | ---
-ID    | Yes
-Calories Burned | Yes
-Total Distance | Yes
-Duration | Yes
-Start Time | Yes
-End Time | Yes
-Heart Rate - Average | Yes
-Heart Rate - Peak | Yes
-Heart Rate - Lowest | Yes
-Heart Rate - Ending | Yes
+Notes:
+1. For drop down menu, multiple choice, and matrix survey questions, there is an option to add a comment box or custom choice. Please take note to choose the appropriate option because custom
+   choices and comment boxes are parsed differently. 

@@ -1,8 +1,8 @@
 {
-  "name": "tableau-wdc-mshealth",
-  "description": "This is a Tableau Web Data Connector for the Microsoft Health API (the place to get data for your Microsoft Band fitness tracker)",
+  "name": "tableau-wdc-survey-monkey",
+  "description": "This is a Tableau Web Data Connector for Survey Monkey",
   "version": "0.0.1",
-  "author": "Ben Lower",
+  "author": "Jackson Huang",
   "contributors": [],
   "license": "MIT",
   "homepage": "",
