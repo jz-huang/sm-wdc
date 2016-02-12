@@ -19,6 +19,7 @@ module.exports = {
   'SURVEY_MONKEY_REDIRECT_URL': 'http://localhost:8080/redirect'
 };
 ```
+* Do the same for the config variable inside of smWDC.js.
 
 You can change host, port, and redirect URL.  If you change these make sure you also change them in app.js.
 

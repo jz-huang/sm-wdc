@@ -2,9 +2,9 @@
 
 var config = {
 	redirect_uri: 'http://localhost:8080/redirect',
-	client_id: 'sm_jhuang8598', 
+	client_id: '', 
 	response_type: 'code',
-	api_key: '5c4x5n79vbfqr95pc2x5u87y'
+	api_key: ''
 }
 
 var api_url = {
