@@ -85,12 +85,6 @@ app.get('/redirect', function(req, res){
 });
 
 
-
-app.get('/smWDC', function(req, res){
-	res = load_config_variables(res); 
-	res.sendFile(__dirname + '/public/smWDC.html');
-});
-
 // -------------------------------------------------- //
 // Create and start our server
 // -------------------------------------------------- //

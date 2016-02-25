@@ -348,6 +348,10 @@ itself until all the responses are obtained.
 The function that passes in the responses to parsing function.
 */
 function _getResponses(survey_id, accessToken, respondents, index, api_limit, data_array){
+	if (respondents.length === 0){ //if there doesn't exist respondents
+		parse_responses([]); 
+		return;
+	}
 	var respondents_to_query = []; 
 	var limit; 
 	if ((index+1)*100 > respondents.length){
