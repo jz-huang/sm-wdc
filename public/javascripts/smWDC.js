@@ -1,7 +1,7 @@
 (function(){
 
 var config = {
-	redirect_uri: 'http://localhost:8080/redirect',
+	redirect_uri: '',
 	client_id: '', 
 	response_type: 'code',
 	api_key: ''
@@ -23,10 +23,10 @@ $(document).ready(function() {
 		var SM_API_BASE = "https://api.surveymonkey.net";
 		var AUTH_CODE_ENDPOINT = "/oauth/authorize"; 
 		url_params = {
-			redirect_uri: 'http://localhost:8080/redirect',
-			client_id: 'sm_jhuang8598', 
+			redirect_uri: '',
+			client_id: '', 
 			response_type: 'code',
-			api_key: '5c4x5n79vbfqr95pc2x5u87y'
+			api_key: ''
 		}
 		var url = SM_API_BASE + AUTH_CODE_ENDPOINT + '?' + jQuery.param(url_params);
 		window.location = url; 
@@ -256,8 +256,6 @@ function parse_survey_details(data){
 						var header = question.heading + ' - ' + answer.text; 
 						header = clean_name(header);
 						id_to_question_name[answer.answer_id] = header;
-						//headers.push(header);
-						//fieldTypes.push('string');
 					} else if (answer.type === 'other'){ 
 						var header = question.heading + ' - ' + answer.text + '(comment)'; 
 						header = clean_name(header); 
