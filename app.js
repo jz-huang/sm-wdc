@@ -9,20 +9,7 @@ var request = require('request');
 var path = require('path');
 var config = require('./config.js');              // Get our config info (app id and app secret)
 var sys = require('util');
-
-
 var app = express();
-
-
-// -------------------------------------------------- //
-// Express set-up and middleware
-// -------------------------------------------------- //
-app.set('port', config.PORT || 80);
-// app.use(express.favicon());      // must install if we need
-app.use(cookieParser());                                     // cookieParser middleware to work with cookies
-// app.use(express.session({ secret: config.EXPRESS_SESSION_SECRET }));   // must install if we need
-app.use(express.static(path.join(__dirname, 'public')));
-// app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));        // this was in the example
 
 // -------------------------------------------------- //
 // Config Variables
@@ -32,6 +19,33 @@ var _smClientSecret = config.SURVEY_MONKEY_CLIENT_SECRET;
 var _smRedirectURL = config.SURVEY_MONKEY_REDIRECT_URL; 
 var _smAPIKey = config.SURVEY_MONKEY_API_KEY; 
 var _authcode; 
+
+function load_config_variables(res){
+	res.cookie('clientID', _smClientID, {}); 
+	res.cookie('redirectURL', _smRedirectURL, {}); 
+	res.cookie('apiKey', _smAPIKey, {}); 
+	return res; 
+}
+// -------------------------------------------------- //
+// Express set-up and middleware
+// -------------------------------------------------- //
+app.use(cookieParser()); 
+app.use(function (req, res, next) {
+	res.cookie('clientID', _smClientID, {}); 
+	res.cookie('redirectURL', _smRedirectURL, {}); 
+	res.cookie('apiKey', _smAPIKey, {}); 
+    next();
+});
+app.set('port', config.PORT || 80);
+// app.use(express.favicon());      // must install if we need
+                                    // cookieParser middleware to work with cookies
+// app.use(express.session({ secret: config.EXPRESS_SESSION_SECRET }));   // must install if we need
+app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));        // this was in the example
+
+
+
+
 app.get('/redirect', function(req, res){
 	if (req.query.error != null){
 		console.log("error detected"); 
@@ -68,6 +82,13 @@ app.get('/redirect', function(req, res){
 		}
 	});
 
+});
+
+
+
+app.get('/smWDC', function(req, res){
+	res = load_config_variables(res); 
+	res.sendFile(__dirname + '/public/smWDC.html');
 });
 
 // -------------------------------------------------- //

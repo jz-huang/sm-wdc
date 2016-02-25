@@ -1,34 +1,37 @@
 (function(){
 
-var config = {
-	redirect_uri: '',
-	client_id: '', 
-	response_type: 'code',
-	api_key: ''
-}
+var config = {};
+//  = {
+// 	redirect_uri: '',
+// 	client_id: '', 
+// 	response_type: 'code',
+// 	api_key: ''
+// }
 
-var api_url = {
-	survey_list : '/v2/surveys/get_survey_list?',
-	survey_details : '/v2/surveys/get_survey_details?',
-	respondent_list : '/v2/surveys/get_respondent_list?',
-	responses : '/v2/surveys/get_responses?',
-	oath : '/oauth/authorize?',
-	api_key : jQuery.param({api_key: config.api_key}),
-	base : 'https://api.surveymonkey.net'
-}
+var api_url; 
+// {
+// 	survey_list : '/v2/surveys/get_survey_list?',
+// 	survey_details : '/v2/surveys/get_survey_details?',
+// 	respondent_list : '/v2/surveys/get_respondent_list?',
+// 	responses : '/v2/surveys/get_responses?',
+// 	oath : '/oauth/authorize?',
+// 	api_key : jQuery.param({api_key: config.api_key}),
+// 	base : 'https://api.surveymonkey.net'
+// }
 
 $(document).ready(function() {
 	var accessToken = Cookies.get("accessToken");
+	initiate_global_configs();
 	$('#login').click(function(){
 		var SM_API_BASE = "https://api.surveymonkey.net";
 		var AUTH_CODE_ENDPOINT = "/oauth/authorize"; 
-		url_params = {
-			redirect_uri: '',
-			client_id: '', 
-			response_type: 'code',
-			api_key: ''
-		}
-		var url = SM_API_BASE + AUTH_CODE_ENDPOINT + '?' + jQuery.param(url_params);
+		// url_params = {
+		// 	redirect_uri: '',
+		// 	client_id: '', 
+		// 	response_type: 'code',
+		// 	api_key: ''
+		// }
+		var url = SM_API_BASE + AUTH_CODE_ENDPOINT + '?' + jQuery.param(config);
 		window.location = url; 
 	});
 	
@@ -48,9 +51,26 @@ $(document).ready(function() {
 
 	if (hasAuth){
 		request_survey_list(accessToken);
+		initiate_global_configs();
 	}
 	update_Auth_displays(hasAuth);
 });
+
+function initiate_global_configs(){
+	config['client_id'] = Cookies.get('clientID'); 
+	config['redirect_uri'] = Cookies.get('redirectURL');
+	config['api_key'] = Cookies.get('apiKey');
+	config['response_type'] = 'code';
+	api_url =  {
+		survey_list : '/v2/surveys/get_survey_list?',
+		survey_details : '/v2/surveys/get_survey_details?',
+		respondent_list : '/v2/surveys/get_respondent_list?',
+		responses : '/v2/surveys/get_responses?',
+		oath : '/oauth/authorize?',
+		api_key : jQuery.param({api_key: config.api_key}),
+		base : 'https://api.surveymonkey.net'
+	}
+};
 
 /*
 update_Auth_displays is called upon initiation of the page
