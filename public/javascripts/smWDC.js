@@ -192,9 +192,11 @@ function respondent_info_headers(){
 	headers.push('respondent_id'); 
 	headers.push('question_name'); 
 	headers.push('question_response');
+	headers.push('date_modified');
 	fieldTypes.push('string');
 	fieldTypes.push('string');
 	fieldTypes.push('string');
+	fieldTypes.push('datetime');
 	return [headers, fieldTypes];
 }
 
@@ -317,10 +319,14 @@ function _getRespondentList(survey_id, accessToken){
 	var respondent_ids = []; 
 	var req_url = api_url.base + api_url.respondent_list + api_url.api_key;
 	var respondents;
+	var request_body = {}; 
+	var request_fields = ["date_modified"]; 
+	request_body["survey_id"] = survey_id; 
+	request_body["fields"] = request_fields; 
 	var xhr = $.ajax({
 		url: req_url,
 		type: 'POST',
-		data: '{"survey_id": "' + survey_id + '"}',
+		data: JSON.stringify(request_body),
 		dataType: 'json',
 		contentType: 'application/json',
 		headers: {
@@ -333,9 +339,14 @@ function _getRespondentList(survey_id, accessToken){
 			}
 			data = jqXHR.responseJSON.data;
 			respondents = jqXHR.responseJSON.data.respondents; 
+			var id_to_date = {}; 
 			for (i = 0; i < respondents.length; i++){
 				respondent_ids.push(respondents[i].respondent_id); 
+				id_to_date[respondents[i].respondent_id] = respondents[i].date_modified; 
 			}
+			var data_transferred = JSON.parse(tableau.connectionData);
+			data_transferred.push(id_to_date);
+			tableau.connectionData = JSON.stringify(data_transferred);
 			setTimeout(_getResponses, 1000, survey_id, accessToken, respondent_ids, 0, 2, []);
         }
 	});
@@ -405,34 +416,37 @@ function parse_responses(data_array){
 	var data_transferred = JSON.parse(tableau.connectionData);
 	var id_to_question_name = data_transferred[1]; 
 	var id_to_answer_name = data_transferred[2];
+	var resp_id_to_date = data_transferred[3];
 	data = data_array; 
 	var question, answers, entry, respondents, respondent; 
 	var toReturnData = []; 
 	var entry;
+	var date_modified; 
 
 	for (i = 0; i < data_array.length; i++){
 		respondents = data_array[i]; 
 		for (j = 0; j < respondents.length; j++){
 			respondent = respondents[j]; 
+			date_modified = resp_id_to_date[respondent.respondent_id]; 
 			for (k = 0; k < respondent.questions.length; k++){
 				question = respondent.questions[k]; 
 				answers = question.answers; 
 				if (answers[0].text){ 
 					if (answers[0].row ==='0') { //single comment box; 
-						entry = fill_entry(respondent.respondent_id, id_to_question_name[question.question_id], answers[0].text); 
+						entry = fill_entry(respondent.respondent_id, id_to_question_name[question.question_id], answers[0].text, date_modified); 
 						toReturnData.push(entry);
 					} else { //multiple comment boxes 
 						for (l = 0; l < answers.length; l++){
-							entry = fill_entry(respondent.respondent_id, id_to_question_name[answers[l].row], answers[l].text); 
+							entry = fill_entry(respondent.respondent_id, id_to_question_name[answers[l].row], answers[l].text, date_modified); 
 							toReturnData.push(entry);
 						}
 					}
 				} else if (question.answers[0].col){ //matrix 
 					for (l = 0; l < answers.length; l++){
 						if (answers[l].row === '0'){
-							entry = fill_entry(respondent.respondent_id, id_to_question_name[question.question_id + '0'], answers[l].text);
+							entry = fill_entry(respondent.respondent_id, id_to_question_name[question.question_id + '0'], answers[l].text, date_modified);
 						} else {
-							entry = fill_entry(respondent.respondent_id, id_to_question_name[answers[l].row], id_to_answer_name[answers[l].col]); 
+							entry = fill_entry(respondent.respondent_id, id_to_question_name[answers[l].row], id_to_answer_name[answers[l].col], date_modified); 
 						}
 						toReturnData.push(entry);
 					} 
@@ -440,14 +454,14 @@ function parse_responses(data_array){
 					for (l = 0; l < answers.length; l++){
 						var response; 
 						if (answers[l].row === '0') { //this is a comment not a choice
-							entry = fill_entry(respondent.respondent_id, id_to_question_name[question.question_id + '0'], answers[l].text);
+							entry = fill_entry(respondent.respondent_id, id_to_question_name[question.question_id + '0'], answers[l].text, date_modified);
 						} else {
 							if (answers[l].text){
 								response = answers[l].text; // when user is given the option to enter custom choice
 							} else {
 								response = id_to_answer_name[answers[l].row];
 							}
-							entry = fill_entry(respondent.respondent_id, id_to_question_name[question.question_id], response);
+							entry = fill_entry(respondent.respondent_id, id_to_question_name[question.question_id], response, date_modified);
 						}
 						toReturnData.push(entry);
 					}
@@ -461,11 +475,12 @@ function parse_responses(data_array){
 /*
 fill_entry is a helper function to create entries
 */
-function fill_entry(respondent_id, question, answer){
+function fill_entry(respondent_id, question, answer, date_modified){
 	var entry = {}; 
 	entry['respondent_id'] = respondent_id; 
 	entry['question_name'] = question; 
 	entry['question_response'] = answer;
+	entry['date_modified'] = check_if_date(date_modified);
 	return entry;
 }
 
